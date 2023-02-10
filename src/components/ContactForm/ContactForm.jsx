@@ -42,6 +42,7 @@ function ContactForm({ onSubmit }) {
     onSubmit(values);
     resetForm();
   };
+
   return (
     <div>
       <Formik

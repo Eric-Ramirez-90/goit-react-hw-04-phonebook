@@ -1,4 +1,4 @@
-import ContactItem from 'components/ContactItem';
+import ContactItem from '../ContactItem';
 import PropTypes from 'prop-types';
 import { Container, Item, List } from './ContactList.styled';
 

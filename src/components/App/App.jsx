@@ -2,12 +2,12 @@ import { Component } from 'react';
 import { nanoid } from 'nanoid';
 import ContactForm from '../ContactForm';
 import Filter from '../Filter';
-import Notification from 'components/Notification';
+import Notification from '../Notification';
 import ContactList from '../ContactList';
 import initialContacts from '../initialContacts.json';
 import { Section, SubTitle, Title } from './App.styled';
 
-export class App extends Component {
+class App extends Component {
   state = {
     contacts: initialContacts,
     filter: '',
@@ -41,7 +41,9 @@ export class App extends Component {
 
     if (
       contacts.find(
-        contact => contact.name.toLocaleLowerCase() === name.toLocaleLowerCase()
+        contact =>
+          contact.name.toLocaleLowerCase().trim() ===
+          name.toLocaleLowerCase().trim()
       )
     ) {
       alert(`${name} is already in contacts!`);
@@ -102,3 +104,5 @@ export class App extends Component {
     );
   }
 }
+
+export default App;
