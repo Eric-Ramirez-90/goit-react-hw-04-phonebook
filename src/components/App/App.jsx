@@ -1,38 +1,23 @@
-import { Component } from 'react';
+import { useState } from 'react';
+import useLocalStorage from 'hooks/useLocalStorage';
+// Libraries
 import { nanoid } from 'nanoid';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+// Components
 import ContactForm from '../ContactForm';
 import Filter from '../Filter';
 import Notification from '../Notification';
 import ContactList from '../ContactList';
 import initialContacts from '../initialContacts.json';
+// Styles
 import { Section, SubTitle, Title } from './App.styled';
 
-class App extends Component {
-  state = {
-    contacts: initialContacts,
-    filter: '',
-  };
+function App() {
+  const [contacts, setContacts] = useLocalStorage('contacts', initialContacts);
+  const [filter, setFilter] = useState('');
 
-  componentDidMount() {
-    const contacts = localStorage.getItem('contacts');
-    const parseContacts = JSON.parse(contacts);
-
-    if (parseContacts) {
-      this.setState({ contacts: parseContacts });
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    const { contacts } = this.state;
-
-    if (contacts !== prevState.contacts) {
-      localStorage.setItem('contacts', JSON.stringify(contacts));
-    }
-  }
-
-  gettingCreatedContact = ({ name, number }) => {
-    const { contacts } = this.state;
-
+  const gettingCreatedContact = ({ name, number }) => {
     const contact = {
       id: nanoid(),
       name,
@@ -46,27 +31,25 @@ class App extends Component {
           name.toLocaleLowerCase().trim()
       )
     ) {
-      alert(`${name} is already in contacts!`);
+      toast.error(`${name} is already in contacts`, { theme: 'colored' });
       return;
     }
 
     if (contacts.find(contact => contact.number === number)) {
-      alert(`${number} is already in contacts!`);
+      toast.error(`This ${number} is already in contacts`, {
+        theme: 'colored',
+      });
       return;
     }
 
-    this.setState(({ contacts }) => ({
-      contacts: [contact, ...contacts],
-    }));
+    setContacts(prevContacts => [contact, ...prevContacts]);
   };
 
-  changeFilter = evt => {
-    this.setState({ filter: evt.currentTarget.value });
+  const changeFilter = evt => {
+    setFilter(evt.currentTarget.value);
   };
 
-  getFilteredContacts = () => {
-    const { filter, contacts } = this.state;
-
+  const getFilteredContacts = () => {
     const normalizedFilter = filter.toLocaleLowerCase();
 
     return contacts.filter(contact =>
@@ -74,35 +57,28 @@ class App extends Component {
     );
   };
 
-  deleteContact = contactId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== contactId),
-    }));
+  const deleteContact = contactId => {
+    setContacts(contacts.filter(contact => contact.id !== contactId));
   };
 
-  render() {
-    const { filter, contacts } = this.state;
+  return (
+    <Section>
+      <Title>Phonebook</Title>
+      <ContactForm onSubmit={gettingCreatedContact} />
+      <SubTitle>Contacts</SubTitle>
+      <Filter value={filter} onChange={changeFilter} />
 
-    const filteredContacts = this.getFilteredContacts();
-
-    return (
-      <Section>
-        <Title>Phonebook</Title>
-        <ContactForm onSubmit={this.gettingCreatedContact} />
-        <SubTitle>Contacts</SubTitle>
-        <Filter value={filter} onChange={this.changeFilter} />
-
-        {!contacts.length > 0 ? (
-          <Notification message="There is no contacts" />
-        ) : (
-          <ContactList
-            contacts={filteredContacts}
-            onDeleteContact={this.deleteContact}
-          />
-        )}
-      </Section>
-    );
-  }
+      {!contacts.length > 0 ? (
+        <Notification message="There is no contacts" />
+      ) : (
+        <ContactList
+          contacts={getFilteredContacts()}
+          onDeleteContact={deleteContact}
+        />
+      )}
+      <ToastContainer autoClose={3000} rtl position="top-center" />
+    </Section>
+  );
 }
 
 export default App;
